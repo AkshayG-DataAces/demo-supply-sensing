@@ -1,0 +1,7 @@
+material_id,material_name,site_id,criticality,single_source_flag,alternate_site_id,notes
+M-API-001,API Alpha,S-AU-001,A,Y,,Core API for Derm family; no qualified alternate
+M-API-002,API Beta,S-DE-001,A,Y,,Core API for Neuro family; regulated sterile handling
+M-EXC-010,Excipient Delta,S-IN-001,B,N,S-AU-001,Can be sourced from AU as backup at higher cost
+M-PKG-100,Carton Print Pack,S-US-001,C,N,S-CN-001,Packaging has alternates; lead time varies
+M-CMP-200,Valve Component,S-CN-001,A,Y,,Single-source component for AutoInjector device
+M-FILL-300,Sterile Fill Kit,S-AU-002,B,Y,,Constrained fill-finish kit; alternate not validated

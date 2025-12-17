@@ -1,0 +1,7 @@
+event_id,event_ts,event_type,country,region,city,severity,headline,source_url
+EVT-001,2025-12-16T10:00:00Z,weather_flood,AU,AU-NSW,Sydney,4,Severe flooding disrupts road/rail corridors near Sydney,https://example.com/australia-floods-sydney
+EVT-002,2025-12-16T10:15:00Z,port_congestion,AU,AU-VIC,Melbourne,3,Port congestion causes vessel delays and container backlogs in Melbourne,https://example.com/melbourne-port-delays
+EVT-003,2025-12-16T10:30:00Z,labor_strike,IN,IN-MH,Mumbai,4,Transport labor action disrupts outbound logistics around Mumbai,https://example.com/mumbai-labor-action
+EVT-004,2025-12-16T10:45:00Z,wildfire,US,US-CA,Los Angeles,3,Wildfire risk increases; precautionary utility shutoffs expected,https://example.com/ca-wildfire-risk
+EVT-005,2025-12-16T11:00:00Z,regulatory_hold,DE,DE-BW,Stuttgart,5,Regulatory inspection triggers temporary hold on outbound shipments,https://example.com/de-regulatory-hold
+EVT-006,2025-12-16T11:15:00Z,typhoon,CN,CN-SH,Shanghai,4,Typhoon forecast impacts port operations and trucking capacity in Shanghai,https://example.com/shanghai-typhoon

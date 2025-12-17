@@ -1,0 +1,8 @@
+material_id,market,on_hand_days,lead_time_days,safety_stock_days,in_transit_days,next_po_eta_days
+M-API-001,US,14,58,28,18,35
+M-API-001,EU,20,58,28,22,35
+M-API-002,US,9,72,30,25,40
+M-EXC-010,US,33,45,21,10,20
+M-PKG-100,US,25,21,14,7,14
+M-CMP-200,US,12,65,30,20,45
+M-FILL-300,US,16,50,21,15,28

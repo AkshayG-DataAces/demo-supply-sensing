@@ -1,0 +1,5 @@
+watch_type,watch_value,severity_threshold,owner,notes
+country,AU,3,SupplyRiskTeam,Monitor AU sourcing footprint
+country,DE,4,QualityTeam,Regulatory events are high impact
+country,CN,3,DeviceOps,Device components risk
+region,IN-MH,3,Procurement,Logistics disruptions around Mumbai

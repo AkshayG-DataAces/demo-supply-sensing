@@ -1,0 +1,12 @@
+product_id,product_name,product_family,material_id,material_usage_class
+P-DERM-01,DermAway 50mg,Derm,M-API-001,core
+P-DERM-01,DermAway 50mg,Derm,M-EXC-010,core
+P-DERM-01,DermAway 50mg,Derm,M-PKG-100,minor
+P-DERM-02,DermAway 100mg,Derm,M-API-001,core
+P-DERM-02,DermAway 100mg,Derm,M-EXC-010,core
+P-DERM-02,DermAway 100mg,Derm,M-PKG-100,minor
+P-NEUR-01,NeuroCalm Injectable,Neuro,M-API-002,core
+P-NEUR-01,NeuroCalm Injectable,Neuro,M-FILL-300,core
+P-NEUR-01,NeuroCalm Injectable,Neuro,M-PKG-100,minor
+P-DEV-01,AutoInjector Device,Device,M-CMP-200,core
+P-DEV-01,AutoInjector Device,Device,M-PKG-100,minor
