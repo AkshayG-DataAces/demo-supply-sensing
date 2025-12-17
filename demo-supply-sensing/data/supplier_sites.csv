@@ -1,7 +1,7 @@
 site_id,supplier_name,site_name,country,region,city,lat,lon,primary_modes,primary_port
-S-AU-001,SouthernChem,Sydney API Plant,AU,AU-NSW,Sydney,-33.8688,151.2093,ocean|truck,SYD
-S-AU-002,SouthernChem,Melbourne Fill-Finish,AU,AU-VIC,Melbourne,-37.8136,144.9631,ocean|truck,MEL
-S-IN-001,InduPharm,Mumbai Excipient Hub,IN,IN-MH,Mumbai,19.0760,72.8777,ocean|truck,BOM
-S-US-001,WestPak,LA Packaging Center,US,US-CA,Los Angeles,34.0522,-118.2437,truck|air,LAX
-S-DE-001,EuroSterile,Stuttgart Sterile Plant,DE,DE-BW,Stuttgart,48.7758,9.1829,truck|rail,STR
-S-CN-001,OrientLogi,Shanghai Component Park,CN,CN-SH,Shanghai,31.2304,121.4737,ocean|truck,SHA
+S-AU-001,Coastal Harvest,Sydney Citrus Processing,AU,AU-NSW,Sydney,-33.8688,151.2093,ocean|truck,SYD
+S-AU-002,Coastal Harvest,Melbourne Cold-Pack Center,AU,AU-VIC,Melbourne,-37.8136,144.9631,ocean|truck,MEL
+S-IN-001,SpiceRoute Foods,Mumbai Sweeteners Hub,IN,IN-MH,Mumbai,19.0760,72.8777,ocean|truck,BOM
+S-US-001,WestPack Foods,LA Snack Packaging,US,US-CA,Los Angeles,34.0522,-118.2437,truck|air,LAX
+S-DE-001,Rhine Naturals,Stuttgart Fruit Prep,DE,DE-BW,Stuttgart,48.7758,9.1829,truck|rail,STR
+S-CN-001,Eastern Assembly,Shanghai Snack Components,CN,CN-SH,Shanghai,31.2304,121.4737,ocean|truck,SHA

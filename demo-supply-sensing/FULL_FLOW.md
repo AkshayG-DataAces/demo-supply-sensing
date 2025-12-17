@@ -1,322 +1,283 @@
-FULL FLOW with inputs and outputs
+# Supply Sensing & Risk Prioritization – Full Flow (v1)
 
-I’ll number every step and explicitly say:
+## 1. Purpose
 
-Input
+This workflow implements a deterministic supply sensing risk engine that:
 
-What we do
+- Ingests external disruption signals
+- Maps them through the client's supply-chain dependency graph
+- Attaches inventory and demand exposure
+- Computes explainable risk scores
+- Produces a Top-N risk brief for planners
 
-Output
+The current version focuses on signal → impact → prioritization, not autonomous decision-making.
 
-STEP 1 — World signal comes in
 
-Input
+## 2. Design Principles
 
-signal_events.csv
+### Deterministic first
+All joins, scoring, and prioritization are rule-based and auditable.
 
-Relevant fields:
+### Explainability over autonomy
+Every risk has drivers and evidence links.
 
-event_id
+### Separation of concerns
+- **Core engine** = deterministic
+- **Narrative/LLM** = optional packaging layer
+- **Automation** = future phase, gated by humans
 
-event_type
 
-country
+## 3. Inputs (Current)
 
-region
+All inputs are CSV-based for demo purposes. In production these map to APIs, data feeds, or internal tables.
 
-severity
+### 3.1 External Signals
 
-headline
+**signal_events.csv**
 
-source_url
+| Field | Description |
+--|
+| `event_id` | Unique event identifier |
+| `event_ts` | Event timestamp |
+| `event_type` | weather, port, labor, regulatory, etc |
+| `country` / `region` / `city` | Location |
+| `severity` | 1–5 normalized |
+| `headline` | Human-readable summary |
+| `source_url` | Evidence link |
 
-What we do
-We do nothing smart yet.
-We just say: “This happened here.”
+### 3.2 Supply Sites
 
-Output
+**sites.csv**
 
-A normalized event object
-(No decision yet)
+| Field | Description |
+--|
+| `site_id` | Site identifier |
+| `supplier_name` | Supplier |
+| `site_name` | Facility |
+| `country` / `region` | Location |
+| `primary_modes` | Transport modes |
+| `primary_port` | Port dependency |
 
-STEP 2 — Is this relevant to us?
+### 3.3 Site → Material Dependencies
 
-Input
+**material_site_dependencies.csv**
 
-Event from Step 1
+| Field | Description |
+--|
+| `site_id` | Site |
+| `material_id` | Material |
+| `material_name` | Name |
+| `criticality` | A / B / C |
+| `single_source_flag` | Y / N |
 
-supplier_sites.csv
+### 3.4 Material → Product BOM
 
-Relevant fields:
+**product_material_bom.csv**
 
-country
+| Field | Description |
+--|
+| `material_id` | Material |
+| `product_id` | Product |
+| `product_name` | Name |
+| `product_family` | Family |
+| `material_usage_class` | core / minor |
 
-region
+### 3.5 Product → Market Exposure
 
-site_id
+**market_exposure.csv**
 
-What we do
-We check:
+| Field | Description |
+--|
+| `product_id` | Product |
+| `market` | US / EU / CA |
+| `avg_weekly_demand_units` | Demand |
+| `priority_tier` | Commercial priority |
 
-“Do we have any supplier sites in this country or region?”
+### 3.6 Inventory Position
 
-If no → ignore event
-If yes → keep going
+**inventory_position.csv**
 
-Output
+| Field | Description |
+--|
+| `material_id` / `product_id` | Inventory key |
+| `market` | Market |
+| `on_hand_days` | Days of supply |
+| `in_transit_days` | Pipeline |
+| `safety_stock_days` | Target |
+| `lead_time_days` | Replenishment |
+| `next_po_eta_days` | Next arrival |
+
+**Note:** Missing inventory is treated as UNKNOWN, not auto-risk.
+
+
+## 4. Core Processing Flow (What Actually Runs)
+
+### Step 1 — Ingest & Normalize (DONE)
+- Load all CSVs via HTTP
+- Aggregate each into a single array
+- Merge into one execution state
+
+### Step 2 — Event → Site Relevance (DONE)
+Deterministic matching:
+- Match by region
+- Fallback to country if no region match
+
+This prevents over-matching and noise.
+
+### Step 3 — Site → Material Impact (DONE)
+- Use site dependency table
+- Pull material criticality and single-source flags
+
+### Step 4 — Material → Product Impact (DONE)
+- Expand via BOM
+- Retains product family and usage class
+
+### Step 5 — Product → Market Exposure (DONE)
+- Attach demand and commercial priority
+- Enables ranking of business impact
+
+### Step 6 — Inventory & Timing Context (DONE)
+Attach:
+- on-hand
+- in-transit
+- safety stock
+- lead time
+- next ETA
+
+Derive:
+- `coverage_days = on_hand + in_transit`
+- `time_to_impact_flag = next_eta > coverage_days`
 
-event + impacted_site_ids[]
+### Step 7 — Deterministic Risk Scoring (DONE)
 
-STEP 3 — What does that site produce?
+Risk score components:
+
+| Factor | Logic |
+---|
+| Event severity | 1–5 |
+| Material criticality | A=4, B=2, C=1 |
+| Single source | +3 |
+| Below safety | +3 |
+| Long lead time | +2 |
+| Time-to-impact | +2 |
+| Priority tier | +0–2 |
+| Demand volume | +0–2 |
 
-Input
+Outputs:
+- `risk_score`
+- `risk_level` (LOW / MEDIUM / HIGH)
+- `drivers` (explainable string)
 
-site_id
+### Step 8 — Risk Classification (DONE)
 
-material_site_dependencies.csv
+Adds:
+- `risk_type` = CLIMATE / LOGISTICS / LABOR / REGULATORY / OTHER
 
-Relevant fields:
+### Step 9 — Row-Level Output (DONE)
 
-material_id
+Produces granular rows:
+```
+event × site × material × product × market
+```
+Output dataset: risk_rows_detail (event×site×material×product×market)
 
-criticality
+This table is retained for drill-down.
 
-single_source_flag
+### Step 10 — Roll-Up / Deduplication (DONE)
 
-alternate_site_id
+Primary decision view is rolled up to:
+```
+event + site + material
+```
+Roll-up behavior:
+- Keep max `risk_score`
+- Aggregate impacted products
+- Aggregate impacted markets
+- Track worst coverage and any time-to-impact
 
-What we do
-We map:
+Output dataset: risk_rollup (event+site+material)
 
-site → materials
+This is the planner/executive view.
 
-Output
+### Step 11 — Top-N Risk table (DONE)
 
-event + site + material_ids[]
+Final output:
+- Sort by `risk_score`
+- Not limited but can if needed
+- Generate structured risk brief with:
+  - What happened
+  - Where
+  - Which material
+  - Which products/markets
+  - Why it matters
+  - Evidence link
+  - Suggested triage action
 
-Still no scoring.
+Delivered via Slack / Email / UI (connector depends on environment; demo generates the formatted brief payload)
 
-STEP 4 — What products depend on those materials?
 
-Input
+## 5. What This IS (and Is NOT)
 
-material_id
+### ✅ This IS:
+- Supply sensing
+- Impact mapping
+- Risk prioritization
+- Explainable intelligence
+- Planner decision support
 
-product_material_bom.csv
+### ❌ This is NOT (yet):
+- Autonomous replanning
+- Auto-overrides
+- Self-learning optimization
+- Closed-loop execution
 
-Relevant fields:
 
-product_id
+## 6. Optional Enhancements (Planned, Not Built)
 
-product_family
+### 6.1 LLM Narrative Layer (Optional)
 
-material_usage_class
+Use LLM only to:
+- Rewrite drivers into human language
+- Generate planner summaries
 
-What we do
-We map:
+LLM does not:
+- change scores
+- reorder priorities
+- execute actions
 
-material → product
+### 6.2 Planner Feedback Loop (Future)
 
-Output
+- Capture approve / reject / comment per risk
+- Store feedback keyed by `rollup_id`
+- Use for:
+  - sensitivity tuning
+  - future recommendation refinement
 
-event + site + material + product_ids[]
+### 6.3 Watchlist Controls (Future)
 
-STEP 5 — Which markets care?
+- Country / market / product filters
+- Severity thresholds
+- Always-critical materials
 
-Input
+### 6.4 Agentic Extensions (Future)
 
-product_id
+This becomes "agentic" only when we add:
+- **goals** (e.g., avoid stockouts)
+- **tool actions** (tickets, scenarios)
+- **gated autonomy** with human approval
 
-market_exposure.csv
 
-Relevant fields:
+## 7. Handoff Notes for Dev Team
 
-market
+### What is DONE
+- End-to-end sensing → risk brief
+- Deterministic scoring
+- Clean roll-ups
+- Demo-ready outputs
 
-avg_weekly_demand_units
-
-priority_tier
-
-What we do
-We map:
-
-product → market exposure
-
-Output
-
-Full exposure context
-
-event
-→ site
-→ material
-→ product
-→ market
-
-
-At this point, we know what could be impacted, but not whether it’s urgent.
-
-STEP 6 — Do we have inventory to absorb this?
-
-Input
-
-material_id
-
-inventory_position.csv
-
-Relevant fields:
-
-on_hand_days
-
-safety_stock_days
-
-lead_time_days
-
-What we do
-We compute simple facts:
-
-Are we below safety stock?
-
-Is lead time long?
-
-Is there inventory in transit?
-
-Output
-
-Vulnerability indicators:
-
-inventory_gap = safety_stock_days - on_hand_days
-lead_time_risk = lead_time_days > threshold
-
-STEP 7 — THIS IS THE SCORE (priority ranking)
-What the score actually is
-
-The score is a math combination of facts we already know.
-
-Example logic (simple, explainable):
-
-Start with severity (from the event)
-
-Add risk if:
-
-material is critical (A/B/C)
-
-material is single-source
-
-inventory is below safety stock
-
-lead time is long
-
-Example
-
-risk_score =
-  event_severity (4)
-+ criticality_weight (A = +4)
-+ single_source (Y = +3)
-+ inventory_below_safety (Y = +3)
-+ long_lead_time (Y = +2)
-
-Total = 16
-
-What this means
-
-The number itself does NOT matter
-
-What matters is:
-
-16 > 9
-
-so this appears higher on the list
-
-Output
-
-risk_score
-
-risk_level (High / Medium / Low)
-
-drivers[] (text explanation)
-
-This lets you say:
-
-“This is high risk because X, Y, Z.”
-
-STEP 8 — Suggested human action (NOT automation)
-Input
-
-risk_level
-
-inventory_gap
-
-alternate_site_id
-
-What we do
-
-We apply very boring rules:
-
-Condition	Suggested action
-High risk + below safety	Planner review immediately
-High risk + single source	Explore alternates / expedite
-Medium risk	Monitor
-Low risk	Info only
-Output
-
-recommended_action
-
-confidence = High / Medium / Low
-
-auto_override_ready = false
-
-This is intentionally conservative.
-
-STEP 9 — HUMAN PLANNING INPUT (this is critical)
-
-This is where human planning actually happens.
-
-What the human sees
-
-They see a Risk Brief, not a CSV:
-
-What happened
-
-Why it matters
-
-What products/markets are exposed
-
-What the system suggests
-
-What the human does
-
-They choose one:
-
-✅ Approve recommendation
-
-❌ Reject
-
-💬 Add comment
-
-How we capture it
-
-We store it in planner_feedback.csv.
-
-Fields used:
-
-rec_id
-
-decision (approve/reject)
-
-reason_code
-
-comment
-
-decided_ts
-
-This is the learning loop input.
-
-Why capturing human input matters
-
-This allows us later to say:
-
-“When floods happen in AU-NSW, planners usually expedite”
-
-“When inventory gap < 5 days, planners ignore it”
-
-That’s how future suggestions get better.
+### What to Improve 
+- Replace CSVs with parquet files or tables
+- Parameterize scoring weights
+- Add drill-down UI
+- Add feedback persistence
+- Add LLM summarization

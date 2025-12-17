@@ -1,8 +1,8 @@
 product_id,market,avg_weekly_demand_units,priority_tier,notes
-P-DERM-01,US,12000,1,Top market; promotion active
+P-DERM-01,US,12000,1,Top market; summer promo active
 P-DERM-01,EU,7000,2,Stable demand
 P-DERM-02,US,8000,1,Growing demand
-P-NEUR-01,US,2500,1,Hospital channel; strict service levels
+P-NEUR-01,US,2500,1,Grocery/retail channel; strict service levels
 P-NEUR-01,CA,900,2,Smaller market
-P-DEV-01,US,3000,1,Device-dependent launches are sensitive to stockouts
+P-DEV-01,US,3000,1,Accessory-dependent launches are sensitive to stockouts
 P-DEV-01,EU,1800,2,Distribution split across regions

@@ -1,0 +1,787 @@
+{
+  "name": "DEMO - Supply Sensing → Risk Brief",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        800
+      ],
+      "id": "f6ad21c8-a674-482d-a464-c22efad7b3af",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "5DayForecast",
+        "cityName": "mumbai"
+      },
+      "type": "n8n-nodes-base.openWeatherMap",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "442dec5b-5d04-4f64-8925-8b3ab5ad9f4d",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "xc6pO5I71RraU3dX",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "22103408-1ed3-459c-baf7-98bf566e41f8",
+      "name": "RSS Read1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "bDxYIWgPUR5XSf57",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "name": "Call News sub-flow",
+      "id": "d8b2e682-1302-4f27-ac78-094988f174c5"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/AkshayG-DataAces/demo-supply-sensing/refs/heads/main/demo-supply-sensing/data/signal_events.csv",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "events"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -144,
+        288
+      ],
+      "id": "d5b29185-91f5-4bd4-ad18-0494957b9730",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9bd7ee4c-7403-4147-b636-e8eba4a72e66",
+              "leftValue": "={{ Number($json.severity) }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        304,
+        288
+      ],
+      "id": "090099d2-2dca-479c-999e-2b9bd68de5e0",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/AkshayG-DataAces/demo-supply-sensing/refs/heads/main/demo-supply-sensing/data/supplier_sites.csv",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "sites"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        80,
+        480
+      ],
+      "id": "78d6368d-b18a-46f3-b177-40877be09504",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "events",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        528,
+        288
+      ],
+      "id": "1a70da6f-7fac-44c8-a1d5-908cbd5d684b",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "sites",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        528,
+        480
+      ],
+      "id": "c763d8b0-0b4d-4d5d-a553-3bd70f3c389d",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 6,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        784,
+        624
+      ],
+      "id": "e5c2a199-25aa-4b40-bbd3-72de628ce1ce",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/AkshayG-DataAces/demo-supply-sensing/refs/heads/main/demo-supply-sensing/data/inventory_position.csv",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "inventory"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        80,
+        1056
+      ],
+      "id": "0bf3d58b-5c6d-4b5d-9e9a-3ab698f505af",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "inventory",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        528,
+        1056
+      ],
+      "id": "d55730e6-d28b-4d3c-89c4-8f045bb79602",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/AkshayG-DataAces/demo-supply-sensing/refs/heads/main/demo-supply-sensing/data/material_site_dependencies.csv",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "dependencies"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        80,
+        1248
+      ],
+      "id": "d2363b96-06ce-4acd-84b6-0d243fe1a1ab",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "dependencies",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        528,
+        1248
+      ],
+      "id": "fa40a557-f2df-40fa-9395-6dc1b7497b4f",
+      "name": "Aggregate3"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/AkshayG-DataAces/demo-supply-sensing/refs/heads/main/demo-supply-sensing/data/market_exposure.csv",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "exposure"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        80,
+        864
+      ],
+      "id": "02a52082-44cc-44f8-8870-dbcd75480d09",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "exposure",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        528,
+        864
+      ],
+      "id": "5199ff51-e9db-4642-87e7-4a06c431cfcc",
+      "name": "Aggregate4"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/AkshayG-DataAces/demo-supply-sensing/refs/heads/main/demo-supply-sensing/data/product_material_bom.csv",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "products"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        80,
+        672
+      ],
+      "id": "e5d932ad-23f8-45d9-9f8e-ed288e011479",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "products",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        528,
+        672
+      ],
+      "id": "6ef2065e-2d6f-4e8f-a94e-999f583ca412",
+      "name": "Aggregate5"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * DEMO: Supply sensing → dependency mapping → risk scoring → recommended action (rules-based)\n *\n * IMPORTANT DESIGN CHOICES:\n * - Deterministic scoring + deterministic suggested actions (auditable, stable)\n * - LLM is NOT used for decisions in v1. (LLM can be added later for narrative summaries.)\n *\n * INPUT (single item) contains arrays:\n *   events[]     : external signals (world events)\n *   sites[]      : supplier/manufacturing sites\n *   deps[]       : site → material dependencies (criticality, single-source, alternates)\n *   bom[]        : material → product mapping\n *   exposure[]   : product → market exposure (demand, priority)\n *   inventory[]  : material + market → inventory position\n *\n * OUTPUT: one item per \"recommendation row\":\n *   event × site × material × product × market with risk_score + drivers + suggested_action\n */\n\n// ---------- helpers ----------\nfunction toNum(x) {\n  // Many CSV values arrive as strings; normalize to number safely\n  const n = Number(x);\n  return Number.isFinite(n) ? n : 0;\n}\n\nfunction criticalityWeight(c) {\n  // Simple weight mapping; can be tuned later\n  if (c === 'A') return 4; // most critical\n  if (c === 'B') return 2;\n  return 1;               // C or unknown\n}\n\nfunction riskLevel(score) {\n  // Convert raw score to an easy label planners understand\n  if (score >= 12) return 'HIGH';\n  if (score >= 8) return 'MEDIUM';\n  return 'LOW';\n}\n\nfunction recommend(level, invGapDays, singleSource) {\n  /**\n   * Rules-based \"next action category\"\n   * This is NOT \"auto override\". It's a triage suggestion for humans.\n   */\n  if (level === 'HIGH') {\n    if (invGapDays > 0) return 'Planner review NOW: pull-in/expedite + evaluate alternates';\n    if (singleSource) return 'Planner review: evaluate alternates + monitor closely';\n    return 'Planner review: monitor and prep mitigation';\n  }\n  if (level === 'MEDIUM') return 'Monitor: prepare mitigation options';\n  return 'Info only';\n}\n\n// ---------- read merged state ----------\nconst input = $input.first().json;\n\n// Support either key name depending on how you aggregated in n8n\nconst events = input.events || [];\nconst sites = input.sites || [];\nconst deps = input.deps || input.dependencies || [];\nconst bom = input.bom || input.products || [];      // your BOM may be called \"products\"\nconst exposure = input.exposure || [];\nconst inventory = input.inventory || [];\n\n// Every run gets a unique run_id so outputs can be traced\nconst runId = `RUN-${new Date().toISOString()}`;\n\nconst out = [];\n\n// ---------- Step A: for each event, find relevant supply chain sites ----------\nfor (const e of events) {\n  // Severity comes from the event feed (demo CSV). In production it would be mapped from feed attributes.\n  const sev = toNum(e.severity);\n\n  /**\n   * Event → Site matching\n   * For the demo we match by exact region OR country.\n   * In production, this could become geo-radius, port lane mapping, polygon overlap, etc.\n   */\n  const matchedSites = sites.filter(s =>\n    (s.region && e.region && s.region === e.region) || (s.country && e.country && s.country === e.country)\n  );\n\n  // ---------- Step B: for each matched site, find impacted materials ----------\n  for (const s of matchedSites) {\n    // Site → material dependencies\n    const siteDeps = deps.filter(d => d.site_id === s.site_id);\n\n    for (const d of siteDeps) {\n      const critW = criticalityWeight(d.criticality);\n      const singleSource = String(d.single_source_flag || '').toUpperCase() === 'Y';\n\n      // ---------- Step C: material → products (BOM) ----------\n      const bomRows = bom.filter(b => b.material_id === d.material_id);\n\n      for (const b of bomRows) {\n        // ---------- Step D: product → markets (exposure) ----------\n          const markets = exposure.filter(x => x.product_id === b.product_id);\n\n        for (const m of markets) {\n          // ---------- Step E: attach inventory context ----------\n          // Prefer inventory keyed by product + market; fall back to material + market.\n          const inv =\n            inventory.find(x => x.product_id === b.product_id && x.market === m.market) ||\n            inventory.find(x => x.material_id === d.material_id && x.market === m.market);\n\n          // Conservative defaults to avoid false-low scores when inventory is missing\n          const onHand = inv ? toNum(inv.on_hand_days) : 0;\n          const inTransit = inv ? toNum(inv.in_transit_days) : 0;\n          const safety = inv ? toNum(inv.safety_stock_days) : 7;\n          const lead = inv ? toNum(inv.lead_time_days) : 14;\n          const nextEta = inv ? toNum(inv.next_po_eta_days) : 999;\n\n          // Total coverage = on-hand + pipeline\n          const coverageDays = onHand + inTransit;\n\n          // Time-to-impact: will we run out before next shipment arrives?\n          const timeToImpact = coverageDays < nextEta && nextEta < 999;\n\n          // Vulnerability indicators (use total coverage, not just on-hand)\n          const invGap = Math.max(0, safety - coverageDays);\n          const longLead = lead >= 30;\n\n          // ---------- Step F: risk score (priority ranking only) ----------\n          /**\n           * risk_score is a deterministic blend of:\n           * - event severity (external)\n           * - criticality + single-source (supply vulnerability)\n           * - inventory gap + lead time (time sensitivity)\n           *\n           * This is designed to be explainable and easy to tune.\n           */\n          let score = 0;\n          score += sev;           // 1-5\n          score += critW;         // 1/2/4\n          if (singleSource) score += 3;\n          if (invGap > 0) score += 3;\n          if (longLead) score += 2;\n          if (timeToImpact) score += 2;\n\n          // Demand / priority influence to surface high-demand, high-priority items\n          const demand = toNum(m.avg_weekly_demand_units);\n          const priority = toNum(m.priority_tier);\n          if (priority > 0 && priority <= 1) score += 2;\n          else if (priority === 2) score += 1;\n          if (demand >= 1000) score += 2;\n          else if (demand >= 500) score += 1;\n\n          const level = riskLevel(score);\n\n          // Drivers text makes it auditable\n          const drivers = [];\n          drivers.push(`Severity ${sev}`);\n          drivers.push(`Criticality ${d.criticality}`);\n          if (singleSource) drivers.push('Single-source');\n          if (invGap > 0) drivers.push(`Below safety by ${invGap} days`);\n          if (longLead) drivers.push(`Lead time ${lead} days`);\n          if (timeToImpact) drivers.push(`Time-to-impact: will run out before next PO (ETA ${nextEta}d)`);\n          if (priority) drivers.push(`Priority tier ${priority}`);\n          if (demand) drivers.push(`Weekly demand ${demand}`);\n\n          // ---------- Step G: suggested next action (triage, not automation) ----------\n          const action = recommend(level, invGap, singleSource);\n\n          // Unique id so human feedback can reference it later\n          const rec_id = `REC-${e.event_id}-${s.site_id}-${d.material_id}-${b.product_id}-${m.market}`;\n\n          // Emit one recommendation row\n          out.push({\n            run_id: runId,\n            rec_id,\n\n            // Event evidence\n            event_id: e.event_id,\n            event_ts: e.event_ts,\n            event_type: e.event_type,\n            headline: e.headline,\n            source_url: e.source_url,\n            country: e.country,\n            region: e.region,\n            city: e.city,\n\n            // Supply chain context\n            site_id: s.site_id,\n            supplier_name: s.supplier_name,\n            site_name: s.site_name,\n\n            material_id: d.material_id,\n            material_name: d.material_name,\n            criticality: d.criticality,\n            single_source_flag: d.single_source_flag,\n\n            product_id: b.product_id,\n            product_name: b.product_name,\n            product_family: b.product_family,\n\n            market: m.market,\n            avg_weekly_demand_units: toNum(m.avg_weekly_demand_units),\n            priority_tier: toNum(m.priority_tier),\n\n            on_hand_days: onHand,\n            safety_stock_days: safety,\n            lead_time_days: lead,\n\n            // Outputs\n            risk_score: score,\n            risk_level: level,\n            drivers: drivers.join(' | '),\n            recommended_action: action,\n\n            // Safety flag\n            auto_override_ready: false\n          });\n        }\n      }\n    }\n  }\n}\n\nreturn out.map(x => ({ json: x }));\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        384
+      ],
+      "id": "6505a0ed-35b1-40c2-bccb-e075df1d31b9",
+      "name": "Code in JavaScript",
+      "notes": "Pre-roll up has product level granuality"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Roll up noisy rows (event×site×material×product×market)\n * into an executive-friendly risk list:\n * one row per event + site + material\n *\n * Keeps:\n * - MAX risk_score (worst case)\n * - Aggregates impacted products/markets\n * - Worst coverage_days + any time_to_impact\n */\n\nconst rows = $input.all().map(x => x.json);\nconst groups = new Map();\n\nfor (const r of rows) {\n  const key = `${r.event_id}||${r.site_id}||${r.material_id}`;\n\n  if (!groups.has(key)) {\n    groups.set(key, {\n      run_id: r.run_id,\n      rollup_id: `ROLL-${r.event_id}-${r.site_id}-${r.material_id}`,\n\n      // Event\n      event_id: r.event_id,\n      event_ts: r.event_ts,\n      event_type: r.event_type,\n      risk_type: r.risk_type,\n      headline: r.headline,\n      source_url: r.source_url,\n      country: r.country,\n      region: r.region,\n      city: r.city,\n\n      // Site\n      site_id: r.site_id,\n      supplier_name: r.supplier_name,\n      site_name: r.site_name,\n\n      // Material\n      material_id: r.material_id,\n      material_name: r.material_name,\n      criticality: r.criticality,\n      single_source_flag: r.single_source_flag,\n\n      // Representative scoring fields (will be updated if a worse row appears)\n      risk_score: r.risk_score,\n      risk_level: r.risk_level,\n      drivers: r.drivers,\n      recommended_action: r.recommended_action,\n\n      // Rollups\n      impacted_products: new Set([r.product_name]),\n      impacted_markets: new Set([r.market]),\n      min_coverage_days: Number.isFinite(Number(r.coverage_days)) ? Number(r.coverage_days) : 999,\n      any_time_to_impact: Boolean(r.time_to_impact_flag),\n\n      // Priority rollup: keep the best (lowest tier number)\n      best_priority_tier: Number.isFinite(Number(r.priority_tier)) ? Number(r.priority_tier) : 999\n    });\n  } else {\n    const g = groups.get(key);\n\n    // Add impacted items\n    if (r.product_name) g.impacted_products.add(r.product_name);\n    if (r.market) g.impacted_markets.add(r.market);\n\n    // Update rollups\n    const cov = Number.isFinite(Number(r.coverage_days)) ? Number(r.coverage_days) : 999;\n    g.min_coverage_days = Math.min(g.min_coverage_days, cov);\n    g.any_time_to_impact = g.any_time_to_impact || Boolean(r.time_to_impact_flag);\n\n    const pt = Number.isFinite(Number(r.priority_tier)) ? Number(r.priority_tier) : 999;\n    g.best_priority_tier = Math.min(g.best_priority_tier, pt);\n\n    // Promote worst-case row\n    if (Number(r.risk_score) > Number(g.risk_score)) {\n      g.risk_score = r.risk_score;\n      g.risk_level = r.risk_level;\n      g.drivers = r.drivers;\n      g.recommended_action = r.recommended_action;\n    }\n  }\n}\n\n// Finalize sets into strings\nconst out = [];\nfor (const g of groups.values()) {\n  out.push({\n    ...g,\n    impacted_products: Array.from(g.impacted_products).join(', '),\n    impacted_markets: Array.from(g.impacted_markets).join(', ')\n  });\n}\n\nreturn out.map(x => ({ json: x }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        704
+      ],
+      "id": "c7a720e8-6087-4d96-9969-3c42eff51b72",
+      "name": "Code in JavaScript1",
+      "notes": "Rollup Risks (Event+Site+Material)"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "risk_score",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        560
+      ],
+      "id": "355de6fa-71d4-44dd-9308-5e1a5d4df501",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "events",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        288
+      ],
+      "id": "caa9dc28-d588-40ce-b733-4bd6ab1bb1c8",
+      "name": "events"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "sites",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        480
+      ],
+      "id": "fa6f916b-8a4e-43c3-88d4-b96c5b913f3d",
+      "name": "sites"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "dependencies",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        1248
+      ],
+      "id": "dd7d076c-b996-4c1f-9d81-1895f9f7173e",
+      "name": "dependencies"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "products",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        672
+      ],
+      "id": "969967e5-aee3-4ad4-a338-bc608c7e10bb",
+      "name": "products"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "exposure",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        864
+      ],
+      "id": "ca30d865-6139-4443-8923-80711fb1c281",
+      "name": "exposure"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "inventory",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        1056
+      ],
+      "id": "831fa41a-4df1-4b8c-bf90-25cd79ffae5e",
+      "name": "inventory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "main": [
+        [
+          {
+            "node": "Call News sub-flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call News sub-flow": {
+      "main": [
+        [
+          {
+            "node": "RSS Read1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "sites",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "inventory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "dependencies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "exposure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Aggregate5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "events": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sites": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "dependencies": {
+      "main": [
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "products": {
+      "main": [
+        [
+          {
+            "node": "Aggregate5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "exposure": {
+      "main": [
+        [
+          {
+            "node": "Aggregate4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "inventory": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4a65ecc3-30c6-4d33-9180-22e36c78afde",
+  "meta": {
+    "instanceId": "249a924afeefbabc4d76a0db178b7cd749a9df3c1818166dfb78ca947e2e85e8"
+  },
+  "id": "oueA8IYj4bdb6isL",
+  "tags": []
+}
